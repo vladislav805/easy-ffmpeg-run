@@ -5,7 +5,7 @@ import sys
 from plugins.pattern import Pattern
 from plugins.plugin import Plugin
 from plugins.speed import Speed
-from utils import parse_time, check_file, Exist, print_error, print_confirm
+from utils import parse_time, check_file, Exist, print_error, print_confirm, print_progressbar
 
 
 class Config:
@@ -37,7 +37,7 @@ class Config:
             print_error('output file "{0}" is directory'.format(self.output_filename))
 
         if output_status is Exist.EXISTS:
-            ans = print_confirm('output file "{0}" already exists. Overwrite?'.format(self.output_filename))
+            ans = print_confirm('output file "{0}" already exists. Overwrite? '.format(self.output_filename))
             if ans is False:
                 print('Cancelled')
                 exit(0)
@@ -73,17 +73,13 @@ class Config:
 
         return [src, *args, [self.output_filename]]
 
-    def _get_percent(self, frame: int, size: str, time: int, speed: float):
-        duration = self._duration
-        frames = self._frames
-
+    def _get_fixed_time_on_run(self, time: int):
         ch_speed = self.get_plugin(Speed)
 
         if ch_speed is not None:
-            duration = duration / ch_speed.factor
-            frames = frames / ch_speed.factor
+            time = time * ch_speed.factor
 
-        return int(time * 100 / duration)
+        return time
 
     _frames = None
     _duration = None
@@ -111,10 +107,10 @@ class Config:
                 if match:
                     self._duration = parse_time(match[0])
 
-            if self._frames is None:
-                match = re.search(r', ([\d.]+) tbr', line, flags=re.IGNORECASE)
-                if match:
-                    self._frames = float(match[1])
+            # if self._frames is None:
+            #     match = re.search(r', ([\d.]+) tbr', line, flags=re.IGNORECASE)
+            #     if match:
+            #         self._frames = float(match[1])
 
             if line.startswith('frame'):
                 status = re.search(
@@ -123,12 +119,8 @@ class Config:
                     flags=re.IGNORECASE
                 )
 
-                frame = int(status[1].strip())
-                size = status[2].strip()
-                time = parse_time(status[3])
+                time = self._get_fixed_time_on_run(parse_time(status[3]))
                 speed = float(status[4].strip())
 
-                sys.stdout.write('Processing... {0}%, speed {1}x\r'.format(
-                    self._get_percent(frame, size, time, speed),
-                    speed
-                ))
+                print_progressbar(time, self._duration, suffix=f"(speed: {speed}x)")
+        print()
