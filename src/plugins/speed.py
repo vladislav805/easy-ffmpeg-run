@@ -13,7 +13,7 @@ class Speed(Plugin):
 
         self.factor = factor
 
-    def is_valid(self) -> bool:
+    def validate(self) -> bool:
         if self.factor <= 0:
             raise ValueError('--speed must be greater then 0')
         return True

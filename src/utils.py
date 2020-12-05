@@ -55,7 +55,7 @@ def print_confirm(message) -> bool:
     return ans == 'y'
 
 
-def print_progressbar(iteration, total, prefix='', suffix='', decimals=1, length=100, fill='#', print_end="\r"):
+def print_progressbar(done, total, prefix='', suffix='', decimals=1, length=100, fill='#', space=' ', print_end='\r'):
     """
     Call in a loop to create terminal progress bar
     @params:
@@ -68,10 +68,12 @@ def print_progressbar(iteration, total, prefix='', suffix='', decimals=1, length
         fill        - Optional  : bar fill character █ (Str)
         print_end   - Optional  : end character (e.g. "\r", "\r\n") (Str)
     """
-    percent = ("{0:." + str(decimals) + "f}").format(100 * (iteration / float(total)))
-    filled_length = int(length * iteration // total)
-    bar = Fore.LIGHTGREEN_EX + fill * filled_length + Fore.GREEN + '-' * (length - filled_length) + Style.RESET_ALL
+    done = min(done, total)
+    percent = ("{0:." + str(decimals) + "f}").format(100 * (done / float(total)))
+    filled_length = int(length * done // total)
+    bar = Fore.LIGHTGREEN_EX + fill * filled_length + Fore.GREEN + space * (length - filled_length - 1) + Style.RESET_ALL
     print(f'\r{prefix} [{bar}] {percent}% {suffix}', end=print_end)
-    # Print New Line on Complete
-    if iteration == total:
+
+    # Print new line on complete
+    if done >= total:
         print()

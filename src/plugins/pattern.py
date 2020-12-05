@@ -9,7 +9,7 @@ class Pattern(Plugin):
 
         self.type = 'glob'
 
-    def is_valid(self) -> bool:
+    def validate(self) -> bool:
         return True
 
     def to_string(self) -> list:
